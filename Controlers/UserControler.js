@@ -1,37 +1,52 @@
 import User from '../Models/UserModel.js';
 import dotenv from 'dotenv';
 
-dotenv.config(); // Load environment variables from .env file
+dotenv.config();
 
-// Registration Controller
+/**
+ * @desc   Register new user
+ * @route  POST /register
+ */
 export const registerUser = async (req, res) => {
-    const { username, partnerName, loveLuckPercentage } = req.body; // Add loveLuckPercentage to destructuring
+    const { username, partnerName, loveLuckPercentage } = req.body;
 
     try {
-        // Check if a user with the same username and partnerName already exists
+        // Check duplicate user (username + partnerName)
         const existingUser = await User.findOne({ username, partnerName });
         if (existingUser) {
-            return res.status(400).json({ message: 'User with this username and partner name already exists' });
+            return res.status(400).json({
+                success: false,
+                message: 'User with this username and partner name already exists'
+            });
         }
 
-        // Create and save new user with loveLuckPercentage
         const newUser = new User({
             username,
             partnerName,
-            loveLuckPercentage  // Save loveLuckPercentage
+            loveLuckPercentage
         });
 
         await newUser.save();
 
-        res.status(201).json({ message: 'User registered successfully', user: newUser });
+        res.status(201).json({
+            success: true,
+            message: 'User registered successfully',
+            data: newUser
+        });
     } catch (error) {
         console.error('Registration error:', error);
-        res.status(500).json({ message: 'Server error', error });
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error
+        });
     }
 };
 
-
-// Get All Users
+/**
+ * @desc   Get all users
+ * @route  GET /users
+ */
 export const getAllUsers = async (req, res) => {
     try {
         const users = await User.find().sort({ createdAt: -1 });
@@ -51,3 +66,33 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
+/**
+ * @desc   Get user by ID
+ * @route  GET /users/:id
+ */
+export const getUserById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: user
+        });
+    } catch (error) {
+        console.error('Get user by id error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error
+        });
+    }
+};
