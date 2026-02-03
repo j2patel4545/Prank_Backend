@@ -29,3 +29,25 @@ export const registerUser = async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 };
+
+
+// Get All Users
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            total: users.length,
+            data: users
+        });
+    } catch (error) {
+        console.error('Get users error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error
+        });
+    }
+};
+
